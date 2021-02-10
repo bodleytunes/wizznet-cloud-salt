@@ -256,11 +256,6 @@ def reinstall_servers():
     client = get_client()
     server_inventory = get_server_inventory()
 
-    # server_inventory = [
-    #    {"p20": {"hostname": "blah-blah1"}},
-    #    {"p21": {"hostname": "blan-blah2"}},
-    # ]
-
     # re-install servers
     for server in server_inventory:
         friendly_name = server["friendly_name"]
