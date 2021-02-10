@@ -1,0 +1,21 @@
+
+- include_tasks: vm_configuration.yml
+  tags:
+    - load_balancers
+    - plex
+    - gluster_client
+    - docker_containers
+    - networking
+    - frr_lb
+    - install_docker
+
+- name: Get variables from runtime
+  set_fact:
+    current_host="{{ current_host }}"
+
+- include_tasks: k3s.yml
+  tags:
+    - k3s
+    - rancher
+    - scheduler_descheduler
+  when: "current_host in groups['kubernetes_servers']"

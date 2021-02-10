@@ -1,0 +1,6 @@
+
+include:
+  - minion_control
+
+
+

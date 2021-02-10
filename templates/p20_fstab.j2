@@ -1,0 +1,4 @@
+{% set hostvars = salt['pillar.get'](opts.id) %}
+
+s3fs#{{ hostvars.fstab.s3fs.bucket_name }}  {{ hostvars.fstab.s3fs.dir }} fuse _netdev,use_xattr,umask=022,parallel_count=10,retries=100,dbglevel=debug,allow_other,use_path_request_style,url=https://s3.us-west-000.backblazeb2.com,nomixupload,nonempty 0 0
+

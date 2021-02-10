@@ -1,0 +1,27 @@
+p20:
+    host: 51.77.116.79
+    user: debian
+    priv: /root/.ssh/id_troon
+    tty: True  
+    sudo: True
+
+p21:
+    host: 188.165.235.210
+    user: debian
+    priv: /root/.ssh/id_troon
+    sudo: True
+    tty: True
+
+lm2:
+    host: 10.12.10.62
+    user: jon
+    priv: /root/.ssh/id_ed25519
+    sudo: True
+    tty: True
+
+salt-client:
+    host: 10.12.7.72
+    user: root
+    priv: /root/.ssh/id_ed25519
+    sudo: True
+    tty: True

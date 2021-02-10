@@ -1,0 +1,284 @@
+---
+#- debug:
+#    var:
+#      "{{ hostvars[inventory_hostname].groups.hetzner[1] }}"
+
+- name: get p20
+  set_fact: 
+    p20: "{{ hostvars[inventory_hostname].groups.hetzner[0] }}"
+  tags: always
+
+- name: get p21
+  set_fact: 
+    p21: "{{ hostvars[inventory_hostname].groups.hetzner[1] }}"
+  tags: always
+
+- name: Get variables from the passed in group_vars dictionary
+  set_fact:
+    current_host="{{ item.name }}"
+    current_host_ip="{{ item.ip }}"
+    node_type="{{ item.node_type }}"
+  tags: always
+
+
+- name: get all hetzner hosts
+  set_fact: 
+    hetzner_hosts: "{{ hostvars[inventory_hostname].groups.hetzner | list }}"
+
+- name: set hostname 
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ current_host }}" state.apply set_hostname_proxmox
+
+- name: set hosts file and local dns
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ current_host }}" state.apply all_hosts_file
+
+- name: Install ifupdown2
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ current_host }}" state.apply ifupdown2
+
+# check for minion already installed
+
+- name: Check Minion
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" test.ping
+  register: minion_existence
+  tags: existence
+  ignore_errors: True
+
+- name: Delete Salt-key
+  ansible.builtin.shell:
+    cmd: salt-key -d "{{ current_host }}" -y
+  # when not true
+  when: minion_existence.stdout.find('Minion did not return') == -1
+  tags: existence
+  ignore_errors: True
+
+- name: Install salt minion
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ current_host }}" state.apply minion_control
+   # When not true
+  when: minion_existence.stdout.find('Minion did not return') == -1
+  tags: existence
+
+- name: Accept new Salt-key
+  ansible.builtin.shell:
+    cmd: salt-key -a "{{ current_host }}" -y
+  ignore_errors: True
+  tags: existence
+
+- name: Install All Initial pre-requisite Packages using APT
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ current_host }}" state.apply initial_package_installs
+
+- name: Syncronize Salt Custom Execution Modules
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" saltutil.sync_modules
+
+- name: Zerotier-one Networking - Stage1 - install Zerotier
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply zerotier_one_stage1
+
+- name: Zerotier-one Networking - Stage2 - Join Network, Authorize, Advertise Networks
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply zerotier_one_stage2
+
+- name: Install Proxmox-VE
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply install_proxmox
+  ignore_errors: True
+
+- name: REBOOT SERVER
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" system.reboot
+
+
+- name: Wait 300 seconds for the rebooted server to come back online -- port 22 open 
+  wait_for:
+    port: 22
+    # note: it has to be an ip, doesn't work with hostname?
+    host: "{{ current_host_ip }}"
+    #host: "{{ hostvars['p21'].ip }}"
+    delay: 10
+    timeout: 600
+    msg: waited for ssh port  
+
+#- name: Wait 300 seconds for the rebooted server to come back online -- port 22 open 
+#  wait_for:
+#    port: 22
+#    host: "{{ node.name }}"
+#    #host: "{{ hostvars['p21'].ip }}"
+#    delay: 10
+#    timeout: 600
+#    msg: waited for ssh port  
+#  with_items: 
+#    - "{{ hetzner_vars.nodes }}"
+#  loop_control:
+#    loop_var: node
+#  tags: 
+#    - wait-for-server
+#
+
+# call handler to reboot server (handler is called "restart servers")
+#- name: Reboot Server
+#  command: /bin/true
+#  notify: "restart servers"
+#  ignore_errors: True
+
+- name: Pause to wait for Salt minion which can be a bit slow starting up
+  wait_for:
+    timeout: 30
+
+- name: Kernel Modules
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply kernel_modules
+  ignore_errors: True
+  tags: kmods
+
+- name: Disk Partitioning
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_disk_partitioning_zpool
+
+- name: LXD Install via Snap
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply lxd_snap
+
+- name: LXD Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply lxd_configuration
+  ignore_errors: True
+
+- name: UFW Firewall Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply ufw
+
+- name: Wait 15 seconds for -- port 22 open after ufw
+  wait_for:
+    port: 22
+    host: "{{ current_host_ip }}"
+    #host: "{{ hostvars['p21'].ip }}"
+    delay: 10
+    timeout: 60
+    msg: waited for ssh port  
+  ignore_errors: True
+
+- name: Backblaze S3FS Storage setup for Backups
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply backblaze_s3fs
+  ignore_errors: True
+
+- name: Proxmox Storage Configuration File
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply proxmox_storage_config
+  ignore_errors: True
+
+- name: Setup Networking /etc/network/interfaces
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply networking_file
+  ignore_errors: True
+
+- name: Sysctl Flags
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply set_sysctl_conf
+  ignore_errors: True
+
+## UDPATE TO LATEST 7.4 FRR OR CONFIG IS NOT ACCEPTED
+
+- name: APT Dist Upgrade (Non-interactive so GRUB doesn't interrupt etc)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply dist_upgrade_non_interactive
+  ignore_errors: True
+
+# configure then restart the service via handler
+- name: Free Range Routing Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply frr_configuration
+  ignore_errors: True
+  notify: "restart frr"
+  tags: "configure-frr"
+  
+  
+- name: Setup Users and Public Keys
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply users
+  ignore_errors: True
+
+- name: Setup Users in Visudo (Sudoers)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply users_visudo
+  ignore_errors: True
+
+- name: Setup Users in PVE
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply users_pve
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage Gluster Client and Fstab Mount for GV1
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster_client
+  ignore_errors: True
+
+
+- name: Setup Samba Shares
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_samba_shares
+  ignore_errors: True
+
+
+# on p20 master only
+- name: Proxmox Cluster Pre-requisites (Master only)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply proxmox_cluster_pre_req
+  ignore_errors: True
+
+# on p20 master only
+- name: Proxmox Cluster Create (Master only)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply proxmox_cluster_create
+  ignore_errors: True
+  when: node_type == master
+  tags: create-cluster
+
+# cross call task from another role
+# only run on NON master
+- name: Proxmox Cluster Join (NON-MASTER only)
+  include_role:
+    name: proxmox_join_cluster
+    tasks_from: join_cluster
+  ignore_errors: True
+  when: node_type != master
+  #tags: join-cluster
+
+
+- name: Setup GlusterFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage Gluster Client and Fstab Mount for GV1
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster_client
+  ignore_errors: True
+
+# post task dist-upgrade to install FRR correct version
+
+
+- name: APT Dist Upgrade (Non-interactive so GRUB doesn't interrupt etc)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply dist_upgrade_non_interactive
+  ignore_errors: True
+
+- name: Setup LizardFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply states.lizardfs.lizardfs_server
+  ignore_errors: True
+
+- name: Setup LizardFS Client
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply states.lizardfs.lizardfs_client
+  ignore_errors: True

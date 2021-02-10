@@ -1,0 +1,34 @@
+{%- set hostvars = salt['pillar.get'](opts.id) -%}
+{%- set pve_vars = salt['pillar.get']('pve_vars') -%}
+
+
+
+
+zfspool: zfs1
+        pool {{ hostvars.zfs.dataset_proxmox }} 
+        content rootdir,images
+        mountpoint /{{ hostvars.zfs.dataset_proxmox }}
+        nodes {% for node in pve_vars.zfs.zfs1.nodes -%}{{node.name}}
+        {%- if not loop.last %},{% endif %}
+        {%- endfor %}
+
+
+
+dir: backblaze
+        path {{ hostvars.fstab.s3fs.dir }}
+        content rootdir,images
+        maxfiles 0
+
+glusterfs: gv1
+        path /mnt/pve/gv1
+        volume gv1
+        content images,backup,iso,snippets,vztmpl
+        prune-backups keep-all=1
+        server 10.55.0.20
+        server2 10.55.0.21
+
+dir: liz1
+        path /liz1/pve
+        content snippets,vztmpl,backup,images,rootdir,iso
+        prune-backups keep-all=1
+        shared 1

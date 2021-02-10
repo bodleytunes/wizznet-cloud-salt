@@ -1,0 +1,38 @@
+---
+- name: Collect only facts about hardware
+  setup:
+    gather_subset:
+    - hardware
+
+# get filtered list of disks
+- name: Output Disks
+  set_fact: 
+    available_disks: "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'sd.*') | select('string') | list }}"
+
+
+
+# do partitions
+- name: Get Partitions
+  become: true
+  community.general.parted:
+    device: "/dev/{{ item }}"
+  # loop through available disks and register the result in the variable patition_results (dictionary)
+  with_items:
+    - "{{ available_disks }}"
+  register: partition_results
+
+# set custom facts from last 
+- set_fact:
+    disk_info: "{{ item.results }}"
+  with_items:
+      - "{{ partition_results }}"
+
+- set_fact:
+    disk_info_2: "{{ item.disk }}"
+  with_items:
+      - "{{ disk_info }}"
+
+- debug:
+    var:
+      disk_info_2
+    

@@ -1,0 +1,29 @@
+file_roots:
+  base:
+    - /srv/salt
+    - /srv/salt/formulas/packages-formula
+    - /srv/salt/formulas/iptables-formula
+    - /srv/formulas/timezone-formula
+    - /srv/salt/_modules
+    - /srv/salt/states/install_pack
+
+
+pillar_roots:
+  base:
+    - /srv/salt/pillar
+  prod:
+    - /srv/salt/pillar/prod
+
+# formula stuff
+fileserver_backend:
+  - roots
+  - git
+gitfs_remotes:
+  - git://github.com/saltstack-formulas/docker-formula.git
+  - git://github.com/saltstack-formulas/dhcpd-formula.git
+
+nodegroups:
+  hetzner: 'p20 and p21'
+
+
+roster_file: /etc/salt/roster

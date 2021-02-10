@@ -1,0 +1,27 @@
+teleport:
+  auth_servers: ["{{ gravity_auth_server }}"]
+  auth_token: {{  gravity_token  }}
+
+
+  data_dir: /var/lib/teleport
+  storage:
+      path: /var/lib/teleport/backend
+      type: dir
+
+auth_service:
+  enabled: no
+
+ssh_service:
+  enabled: yes
+  labels:
+      cluster: {{ gravity_cluster_name }}
+  commands:
+      - name: kernel
+        command: [/bin/uname, -r]
+        period: 5m
+
+proxy_service:
+  enabled: yes
+
+
+

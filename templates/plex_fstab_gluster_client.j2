@@ -1,0 +1,6 @@
+{% set glusterfs_peers = salt['pillar.get'](opts.id+':glusterfs:peers') %}
+
+
+{{ glusterfs_peers['peer1']['name'] }}:/gv1 /gv1 glusterfs defaults,backupvolfile-server={{ glusterfs_peers['peer2']['name'] }},_netdev 0 0
+
+

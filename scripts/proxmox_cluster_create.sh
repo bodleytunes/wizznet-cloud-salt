@@ -1,0 +1,1 @@
+pvecm create {{ cluster_name }} --link0 {{ link_ip }}

@@ -1,0 +1,6 @@
+---
+- name: VM pre-requisities
+  hosts: salt_host
+  gather_facts: no
+  roles:
+    - day0_vm

@@ -1,0 +1,61 @@
+# use node groups in salt
+#- include_tasks: day0_nodegroups.yml
+#  with_items: 
+#    - "{{ hetzner_vars.nodes }}"
+#  tags:
+#    - all
+
+# loop individual hosts
+- include_tasks: day0_all.yml
+  with_items: "{{ hetzner_vars.nodes }}"
+  tags:
+    - all
+    - wait-for-server
+    - existence
+ #   - create-cluster
+ #   - join-cluster
+
+#- include_tasks: day0_all.yml
+#  tags:
+#    - p20
+
+#- include_tasks: day0_all.yml
+#  tags:
+#    - p21
+
+# ENTIRE TASKS
+  # run entire task run (import tasks)
+- import_tasks: day0_p20.yml
+  tags:
+    - p20
+
+
+- import_tasks: day0_p21.yml
+  tags:
+    - p21
+
+- import_tasks: day0_lm2.yml
+  tags:
+    - lm2
+# SELECTED TASKS
+# run select tasks (include tasks)
+#- import_tasks: day0_p20.yml
+- include_tasks: day0_p20.yml
+  tags:
+    - create-cluster
+
+- include_tasks: day0_p21.yml
+  tags:
+    - join-cluster
+    - lizardfs
+  
+
+- include_tasks: glusterfs.yml
+  tags:
+    - glusterfs
+#- import_tasks: day0_all.yml
+#  with_items:
+#    - p20
+#    - p21
+#  tags:
+#    - all

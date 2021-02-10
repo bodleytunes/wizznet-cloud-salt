@@ -1,0 +1,3 @@
+CLUSTER_MASTER_NODE_ROOT_PASSWORD: "{{ VAULT_CLUSTER_MASTER_NODE_ROOT_PASSWORD }}"
+CLUSTER_MASTER_NODE_HOSTNAME: p20
+terraform_password: "{{ vault_terraform_password }}"

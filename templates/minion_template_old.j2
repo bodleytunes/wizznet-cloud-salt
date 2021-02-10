@@ -1,0 +1,9 @@
+master: {{ salt['pillar.get']('group_vars:salt_master') }}
+
+startup_states: 'sls'
+sls_list:
+  - networking_file
+  - networking_config
+
+minion_id_caching: False
+

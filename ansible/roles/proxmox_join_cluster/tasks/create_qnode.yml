@@ -1,0 +1,51 @@
+---
+
+- name: install python-pip on qnode
+  apt:
+    name: python3-pip
+    state: present
+  tags: 
+    - create_qnode
+    - never
+  become: yes
+  when: "'proxmox_qnodes' in group_names"
+
+- name: install corosync-qnetd on single quorum node
+  apt:
+    name: corosync-qnetd
+    state: present
+  tags: create_qnode
+  become: yes
+  when: "'proxmox_qnodes' in group_names"
+  
+
+- name: install pexpect
+  pip:
+    name: pexpect
+  become: yes
+  tags: create_qnode
+
+- name: install corosync-qdevice on all devices
+  apt:
+    name: corosync-qdevice
+    state: present
+  tags: create_qnode
+  become: yes
+  when: "'proxmox_cluster' in group_names"
+
+
+ 
+
+- name: Creating the Qnode
+  expect:
+    command: pvecm qdevice setup {{ QNODE_IP }} 
+    responses:
+      'password for': "{{ VAULT_CLUSTER_MASTER_NODE_ROOT_PASSWORD }}"
+      '(?i)fingerprint': "yes"
+    echo: yes
+    timeout: 60
+ # when: ansible_hostname != CLUSTER_MASTER_NODE_HOSTNAME
+  no_log: false
+  tags: join-cluster
+  become: yes
+  when: "'kube1' in inventory_hostname"

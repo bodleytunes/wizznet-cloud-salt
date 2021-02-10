@@ -1,0 +1,19 @@
+---
+- name: run Saltstack states via local salt container
+  hosts: salt_host
+  strategy: free
+  gather_facts: no
+  roles:
+    - day0
+    
+- name: ssh keys
+  hosts: hetzner
+  gather_facts: no
+  roles:
+    - sshkeys
+
+- name: Terraform Deployments
+  hosts: salt_host
+  gather_facts: no
+  roles:
+    - terraform_deploy

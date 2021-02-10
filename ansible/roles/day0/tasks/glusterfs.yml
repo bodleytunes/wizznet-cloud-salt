@@ -1,0 +1,11 @@
+- name: Setup GlusterFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster
+  ignore_errors: True
+  tags: glusterfs
+
+- name: Setup GlusterFS Storage Gluster Client and Fstab Mount for GV1
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster_client
+  ignore_errors: True
+  tags: glusterfs

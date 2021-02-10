@@ -1,0 +1,24 @@
+s3fs_install:
+  pkg.installed:
+    - pkgs:
+      - libfuse-dev
+      - fuse
+      - build-essential
+      - libcurl4-open
+
+
+/etc/fstab:
+  file.managed:
+    - source: salt://templates/p20_fstab.j2
+    - user: root
+    - group: root
+    - mod: 644
+    - template: jinja
+    - debug: true
+s3fs:
+  service.running:
+    - enable: True
+    - reload: True
+    - watch:
+      - file: /etc/frr/frr.conf
+      - file: /etc/frr/daemons  

@@ -1,0 +1,8 @@
+---
+- name: VM Configuration and Installs
+  hosts: salt_host
+  strategy: free
+  gather_facts: no
+  roles:
+    - vm_configuration
+    

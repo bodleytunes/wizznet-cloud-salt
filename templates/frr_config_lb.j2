@@ -1,0 +1,35 @@
+{% set hostvars = salt['pillar.get'](opts.id) %}
+
+{%- set bridge_interfaces = salt['pillar.get'](opts.id+':interface_networks'), [] %}
+
+{%- set networking = salt['pillar.get'](opts.id+':frr:evpn:peers') %}
+
+{%- set advertised_networks = salt['pillar.get'](opts.id+':frr:advertised_networks') %}
+
+router-id {{ hostvars.router_id }}
+router bgp {{ hostvars.bgp_as }}
+ bgp bestpath as-path multipath-relax
+ bgp router-id {{ hostvars.router_id }}
+ no bgp ebgp-requires-policy
+ neighbor gateway peer-group
+ neighbor gateway remote-as external
+ neighbor gateway bfd
+ neighbor gateway disable-connected-check
+ neighbor gateway timers 1 3
+ neighbor gateway capability extended-nexthop
+ {% for peer in networking %}
+ neighbor {{ peer.ip }} peer-group gateway
+ {% endfor %}
+ address-family ipv4 unicast
+{% for net in advertised_networks %}
+  network {{ net.net }}{{ net.mask }}
+{% endfor %}
+  neighbor gateway soft-reconfiguration inbound
+ exit-address-family
+ !
+!
+!
+!
+!
+line vty
+

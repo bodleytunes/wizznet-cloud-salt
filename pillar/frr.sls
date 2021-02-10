@@ -1,0 +1,2 @@
+frr:
+  version: frr-stable

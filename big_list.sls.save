@@ -1,0 +1,45 @@
+big_list:
+  pkg.installed:
+    - pkgs:
+      - nano
+      #- ufw
+      - iftop
+      - iperf3
+      - fail2ban
+      - salt-minion
+      - molly-guard
+      - htop
+      - snap
+      - conntrack
+      - git
+      - ifstat
+      - iptraf-ng
+      - wireguard
+      - wireguard-dkms
+      - wireguard-tools
+      - lzop
+      - mbuffer
+      - pigz 
+      - ncdu
+      - tree
+      - samba
+      - cifs-utils
+      - mtr-tiny
+      - dnsutils
+      - mosh
+      - frr
+      - zfsutils-linux
+      - libpam-google-authenticator
+      - cpu-checker
+      - snapd 
+      - nethogs
+      - pv
+      - debhelper
+      - python3-pip
+      - bridge-utils
+      - nftables
+      - iptables-persistent
+big_list_not_installed:
+  pkg.not_installed:
+    - pkgs.purged:
+      - ufw
