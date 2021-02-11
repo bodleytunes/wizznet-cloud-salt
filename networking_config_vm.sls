@@ -33,7 +33,7 @@ update_grub:
 {% if interface.gw is not none %}
 {{ public_interface_name }}:
 {% else %}
-{{ interface.name }}
+{{ interface.name }}:
 {% endif %}
   network.managed:
     - enabled: True
