@@ -5,6 +5,7 @@
     - plex
     - gluster_client
     - docker_containers
+    - users_vm
     - networking
     - frr_lb
     - install_docker

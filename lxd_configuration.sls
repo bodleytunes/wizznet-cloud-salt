@@ -17,7 +17,7 @@ lxd_create_dummy_bridge:
   cmd.run:
     - name: |
           /snap/bin/lxc launch images:alpine/edge/amd64 alpine1 -s zpool1 -n lxdbr1
-          /snap/bin/lxc config set alpine1 boot.autostart=0
+          /snap/bin/lxc config set alpine1 boot.autostart=1
     - cwd: /tmp
     - shell: /bin/bash
     - timeout: 300

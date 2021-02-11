@@ -42,6 +42,15 @@
     - install_docker
     - never
 
+    # Configure VM USERS
+- name: Configure Users on VM's
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply users_vm
+  ignore_errors: True
+  tags:
+    - users_vm
+    - never
+
 # Configure Networking via Salt, set advanced features like MTU, remove cr*ppy netplan, set minion sls startup.
 - name: Configure Networking
   ansible.builtin.shell:

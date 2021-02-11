@@ -1,4 +1,5 @@
 {% set hostvars = salt['pillar.get'](opts.id)  %}
+{% set public_interface_name = salt['network.default_route']('inet')[0]['interface']  %}
 
 # get rid of sh*tty netplan directory - GOOD RIDDANCE!
 no_more_netplan:
@@ -12,9 +13,28 @@ install_ifupdown:
       - ifupdown
       - resolvconf
 
+# change to legacy interface names via grub
+change_to_legacy_iface_names:
+  file.line:
+    - name: /etc/default/grub
+    - match: GRUB_CMDLINE_LINUX=""
+    - content: GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"
+    - mode: replace
+
+# update grub
+update_grub:
+  cmd.run:
+    - name: |
+        sudo update-grub
+
+
 {# setup vm network interfaces #}
 {% for interface in hostvars.networking %}
-{{interface.name}}:
+{% if interface.gw is not none %}
+{{ public_interface_name }}:
+{% else %}
+{{ interface.name }}
+{% endif %}
   network.managed:
     - enabled: True
     - ipaddr: {{interface.ip}}
