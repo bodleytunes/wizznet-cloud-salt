@@ -1,0 +1,7 @@
+{% set hostvars = salt['pillar.get'](opts.id) %}
+
+{% for peer in hostvars.frr.evpn.peers %}
+
+{{opts.id}}:/gv1 /gv1 glusterfs defaults,backupvolfile-server={{ peer.name }},_netdev 0 0
+
+{% endfor %}

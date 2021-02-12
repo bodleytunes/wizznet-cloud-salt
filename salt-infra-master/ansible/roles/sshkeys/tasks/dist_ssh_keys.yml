@@ -1,0 +1,40 @@
+---
+- name: Set filename for key
+  set_fact:
+    ssh_key_filename: id_rsa
+  tags:
+    - ssh
+
+- name: generate SSH key
+  openssh_keypair:
+    path: "~/.ssh/{{ssh_key_filename}}"
+    type: rsa
+    size: 4096
+    state: present
+    force: no
+  become: yes
+  tags:
+    - ssh
+
+- name: Distribute SSH Keys
+  shell: cat ~/.ssh/id_rsa.pub
+  register: ssh_keys
+  become: yes
+  tags:
+    - ssh
+
+- name: check keys
+  debug: msg="{{ ssh_keys.stdout }}"
+  become: yes
+  tags:
+    - ssh
+
+- name: deploy keys on all servers
+  authorized_key: user=root key="{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ ssh_keys.stdout }}"
+    - "{{ groups['hetzner'] }}"
+  become: yes
+  tags:
+    - ssh

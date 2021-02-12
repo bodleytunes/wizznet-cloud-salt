@@ -1,0 +1,8 @@
+hetzner_vars:
+  nodes:
+    - name: p20
+      ip: 10.55.0.20
+      node_type: master
+    - name: p21
+      ip: 10.55.0.21
+      node_type: slave

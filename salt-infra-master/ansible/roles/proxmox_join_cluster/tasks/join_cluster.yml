@@ -1,0 +1,33 @@
+---
+- name: install python-pip
+  apt:
+    name: python-pip
+    state: present
+  tags: 
+    - join-cluster
+    - never
+  become: yes
+
+- name: install pexpect
+  pip:
+    name: pexpect
+  become: yes
+  tags: 
+    - join-cluster
+    - never
+ 
+
+- name: Adding node to proxmox cluster
+  expect:
+    command: pvecm add {{ CLUSTER_MASTER_NODE_HOSTNAME }} --link0 {{ ansible_ssh_host }}
+    responses:
+      'password for': "{{ VAULT_CLUSTER_MASTER_NODE_ROOT_PASSWORD }}"
+      '(?i)fingerprint': "yes"
+    echo: yes
+    timeout: 60
+ # when: ansible_hostname != CLUSTER_MASTER_NODE_HOSTNAME
+  no_log: false
+  tags: 
+    - join-cluster
+    - never
+  become: yes

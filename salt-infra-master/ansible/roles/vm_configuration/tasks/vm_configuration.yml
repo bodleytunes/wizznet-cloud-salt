@@ -1,0 +1,122 @@
+- name: Get variables from runtime
+  set_fact:
+    current_host="{{ current_host }}"
+
+- name: Delete Existing Salt Key
+  ansible.builtin.shell:
+    cmd: salt-key -d "{{ current_host }}" -y
+  ignore_errors: True
+
+# run adhoc command for restarting minion - login as jon then become root
+- name: Restart Remote Minion
+  ansible.builtin.shell:
+    #cmd: ansible all -i '"{{ current_host }}",'' -m ansible.builtin.service -a "name=salt-minion state=restarted"
+    ansible "{{ current_host }}" -u jon --become  -m ansible.builtin.service -a "name=salt-minion state=restarted"
+  ignore_errors: True
+
+- name: Accept Salt Key
+  ansible.builtin.shell:
+    cmd: salt-key -a "{{ current_host }}" -y
+  ignore_errors: True
+
+# wait for a working minion
+
+- name: Check Minion is responding
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" test.ping
+  retries: 20
+  delay: 5
+  register: result
+  until: result.rc == 0
+
+- name: Configure Hosts File (VMs)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply all_hosts_file_vms
+  ignore_errors: True
+
+- name: Install Docker 
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply install_docker_ubuntu
+  ignore_errors: True
+  tags:
+    - install_docker
+    - never
+
+    # Configure VM USERS
+- name: Configure Users on VM's
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply users_vm
+  ignore_errors: True
+  tags:
+    - users_vm
+    - never
+
+# Configure Networking via Salt, set advanced features like MTU, remove cr*ppy netplan, set minion sls startup.
+- name: Configure Networking
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply networking_config_vm
+  ignore_errors: True
+  tags:
+    - networking
+    - never
+
+- name: FRR and Routing Configuration for LB
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply frr_configuration_lb
+  ignore_errors: True
+# only apply if the host in question is also a member of the host_load_balancers group in inventory
+  when: "current_host in groups['host_load_balancers']"
+  tags:
+    - frr_lb
+    - never
+
+- name: Install GlusterFS Client
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply storage_gluster_client
+  ignore_errors: True
+  tags:
+    - gluster_client
+    - never
+
+- name: Configure HAproxy Config file and save to glusterFS
+  ansible.builtin.shell:
+    cmd: salt p21 state.apply configure_haproxy
+  ignore_errors: True
+  when: "current_host in groups['host_load_balancers']"
+  tags:
+    - configure_haproxy
+    - never
+
+- name: Install Specific Docker Containers via Docker-Compose Formula (Salt Pillar)
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply docker.compose.ng
+  ignore_errors: True
+  tags:
+    - docker_containers
+    - never
+ 
+- name: Configure FRR, BGP and anycast advertisements
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply frr_configuration_lb
+  ignore_errors: True
+  tags:
+    - frr_lb
+    - never
+
+ # Finally Reboot VM
+- name: Restart VM
+  ansible.builtin.shell:
+    ansible "{{ current_host }}" -u jon --become  -m ansible.builtin.reboot 
+  ignore_errors: True
+ 
+- name: Check Minion is responding
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" test.ping
+  retries: 20
+  delay: 5
+  register: result
+  until: result.rc == 0
+  #tags:
+  #  - load_balancers
+  #  - never
+  #ignore_errors: True

@@ -1,0 +1,5 @@
+
+- include_tasks: terraform_deploy.yml
+  tags:
+    - terraform_apply
+    - terraform_destroy

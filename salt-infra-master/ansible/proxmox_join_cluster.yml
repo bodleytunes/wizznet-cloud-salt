@@ -1,0 +1,15 @@
+---
+- name: join proxmox cluster
+  hosts: p21
+  gather_facts: yes
+  roles:
+    - proxmox_join_cluster
+
+
+# only run against proxmox cluster group members in inventory
+- name: Qnode Utils
+  hosts: proxmox_cluster
+  gather_facts: yes
+  roles:
+    - proxmox_join_cluster
+ 

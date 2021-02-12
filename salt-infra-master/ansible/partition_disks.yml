@@ -1,0 +1,6 @@
+---
+- name: join proxmox cluster
+  hosts: hetzner
+  gather_facts: yes
+  roles:
+    - partitioning

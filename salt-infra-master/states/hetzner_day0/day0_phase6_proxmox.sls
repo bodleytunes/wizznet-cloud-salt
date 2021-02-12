@@ -1,0 +1,6 @@
+
+include:
+  - install_proxmox
+
+
+

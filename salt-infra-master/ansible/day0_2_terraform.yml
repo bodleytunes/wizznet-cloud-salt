@@ -1,0 +1,8 @@
+---
+- name: Terraform Deploy
+  hosts: salt_host
+  strategy: free
+  gather_facts: no
+  roles:
+    - terraform_deploy
+    

@@ -1,0 +1,6 @@
+{% set hostvars = salt['pillar.get'](opts.id)  %}
+
+{% for item in hostvars.frr.evpn.peers %}
+# appended by salt state plex_hosts_file_cloudinit
+{{item.ip}}     {{item.name}}
+{% endfor %}

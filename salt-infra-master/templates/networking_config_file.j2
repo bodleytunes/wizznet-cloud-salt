@@ -1,0 +1,78 @@
+{%- set hostvars = salt['pillar.get'](opts.id) %}
+{# get the list of dicts and put into iterator object without having to use .items in the loop - see below #}
+{%- set bridge_interfaces = salt['pillar.get'](opts.id+':interface_networks'), [] %}
+
+# network interfaces
+auto lo
+iface lo inet loopback
+
+iface {{ hostvars.interface_names.upstream_physical }} inet manual
+
+auto {{ hostvars.interface_names.upstream }}
+iface {{ hostvars.interface_names.upstream }} inet dhcp
+  bridge-ports {{ hostvars.interface_names.upstream_physical }}
+  bridge-stp off
+  bridge-fd 0
+
+
+{# for evpn bridges #}
+{% for items in bridge_interfaces %}
+{% for bridge in items %}
+{# check for evpn in the name otherwise it will fail if it tries a non evpn type as key wont exist #}
+{% if 'evpn' in bridge.name %}
+
+auto evpn{{ bridge.vxlan_id }}
+iface evpn{{ bridge.vxlan_id }} inet static
+  address {{bridge.ip}}{{bridge.mask}} 
+  bridge_ports vxlan{{ bridge.vxlan_id }} 
+  mtu {{ bridge.mtu }}
+  hwaddress ether {{ bridge.anycast_mac }}
+
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
+
+{# for vmbrX bridges #}
+{%- for items in bridge_interfaces -%}
+{%- for bridge in items -%}
+{# check for evpn in the name otherwise it will fail if it tries a non evpn type as key wont exist #}
+{%- if 'lxdbr' in bridge.name %}
+auto {{ bridge.name }}
+iface {{ bridge.name }} inet static
+          address {{bridge.ip}}{{bridge.mask}}
+          bridge-ports none
+          bridge-stp off
+          bridge-fd 0  
+          mtu {{ bridge.mtu }}
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
+{# for vxlan bridges #}
+{% for items in bridge_interfaces %}
+{% for bridge in items %}
+{% if 'vxlan' in bridge.name %}
+
+auto vxlan{{ bridge.vxlan_id }}
+iface vxlan{{ bridge.vxlan_id }} 
+  vxlan-id {{ bridge.vxlan_id }}
+  vxlan-local-tunnelip {{ hostvars.zt_ip }}
+  bridge-learning {{ bridge.bridge_learning }}
+  bridge-arp-nd-suppress {{ bridge.bridge_arp_nd_suppress }}
+  bridge-unicast-flood {{ bridge.bridge_unicast_flood }}
+  bridge-multicast-flood {{ bridge.bridge_multicast_flood }}
+
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
+
+{# for vmbrX bridges #}
+{#}
+{% for items in bridge_interfaces %}
+{% for bridge in items %}
+{% if 'vmbr' in bridge %}
+{{ bridge.vxlan_id }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+#}

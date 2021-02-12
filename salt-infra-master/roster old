@@ -1,0 +1,24 @@
+[network:childrem]
+superspine
+spine
+leaf
+serverhub
+serversat
+
+[network:vars]
+ssh_port=22
+
+[serverhub]
+p20	ansible_host=10.55.0.20
+p21	ansible_host=10.55.0.21
+
+[serversat]
+p10	ansible_host=10.55.0.10
+p12	ansible_host=10.55.0.11
+p75	ansible_host=10.55.0.75
+
+[all:vars]
+#general global vars go here
+
+[ovh:children]
+serverhub

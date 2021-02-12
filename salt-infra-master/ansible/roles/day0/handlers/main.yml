@@ -1,0 +1,31 @@
+---
+- name: restart servers
+  reboot:
+    hosts: hetzner
+    msg: "Reboot initiated by Ansible"
+    connect_timeout: 5
+    reboot_timeout: 600
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: whoami
+  listen: "restart servers"
+  when: hostvars[inventory_hostname].groups.hetzner[1] == "p21"
+    #when: group == "hetzner"
+
+#- name: Restart FRR Service
+#  ansible.builtin.systemd:
+#    state: restarted
+#    name: frr
+#  listen: "restart frr"
+
+- name: Restart FRR Service
+  ansible.builtin.shell:
+    cmd: ansible "{{ p20 }}" -u jon --become  -m ansible.builtin.service -a "name=frr state=restarted"
+  ignore_errors: True
+  listen: "restart frr p20"
+
+- name: Restart FRR Service
+  ansible.builtin.shell:
+    cmd: ansible "{{ p21 }}" -u jon --become  -m ansible.builtin.service -a "name=frr state=restarted"
+  ignore_errors: True
+  listen: "restart frr p21"

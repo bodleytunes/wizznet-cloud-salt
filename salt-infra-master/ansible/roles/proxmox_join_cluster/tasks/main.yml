@@ -1,0 +1,12 @@
+- name: Join Proxmox Cluster
+  include_tasks: join_cluster.yml
+  tags: 
+    - join-cluster
+    - never
+
+
+- name: Qnode Utility
+  include_tasks: create_qnode.yml
+  tags: 
+    - create_qnode
+    - never

@@ -1,0 +1,310 @@
+---
+
+
+- name: Get variables from the passed in group_vars dictionary
+  set_fact:
+    current_host="{{ hetzner_vars.nodes[1].name }}"
+    current_host_ip="{{ hetzner_vars.nodes[1].ip }}"
+    node_type="{{ hetzner_vars.nodes[1].node_type }}"
+  tags: always
+  
+
+
+
+- name: get p20
+  set_fact: 
+    p20: "{{ hostvars[inventory_hostname].groups.hetzner[0] }}"
+  tags: always
+
+- name: get p21
+  set_fact: 
+    p21: "{{ hostvars[inventory_hostname].groups.hetzner[1] }}"
+  tags: always
+
+- name: get all hetzner hosts
+  set_fact: 
+    hetzner_hosts: "{{ hostvars[inventory_hostname].groups.hetzner | list }}"
+
+- name: set hostname 
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ p21 }}" state.apply set_hostname_proxmox
+
+- name: set hosts file and local dns
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ p21 }}" state.apply all_hosts_file
+  ignore_errors: True
+
+- name: Install ifupdown2
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ p21 }}" state.apply ifupdown2
+  async: 80
+  poll: 5
+  ignore_errors: True
+
+
+#    
+#- name: Install ifupdown2
+#  apt:
+#    name: ifupdown2
+#    state: present
+#    dpkg_options: 'force-confold,force-confdef'
+#  tags: 
+#    - never
+#  become: yes
+#  delegate_to: "{{ p21 }}"
+#  #with_items: 
+  #  - "{{ groups['hetzner'] }}"
+  #when: item == 'p21'
+  #register: delegated_node
+
+
+- name: Delete Salt-key
+  ansible.builtin.shell:
+    cmd: salt-key -d "{{ p21 }}" -y
+
+- name: Install salt minion
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ p21 }}" state.apply minion_control
+
+- name: Accept new Salt-key
+  ansible.builtin.shell:
+    cmd: salt-key -a "{{ p21 }}" -y
+
+- name: Check for Minion to be active
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" test.ping
+  register: ping_result
+  retries: 15
+  delay: 4
+  # check for the salt test.ping stdoutput to have a result of True before continuing
+  until: '"True" in ping_result.stdout'
+
+  
+
+- name: cloud init disable
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply cloud_init_disable
+  ignore_errors: True
+
+- name: Setup Networking /etc/network/interfaces
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply networking_file
+  ignore_errors: True
+  
+- name: Install All Initial pre-requisite Packages using APT
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ p21 }}" state.apply initial_package_installs
+
+- name: Syncronize Salt Custom Execution Modules
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" saltutil.sync_modules
+
+- name: Zerotier-one Networking - Stage1 - install Zerotier
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply zerotier_one_stage1
+
+- name: Zerotier-one Networking - Stage2 - Join Network, Authorize, Advertise Networks
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply zerotier_one_stage2
+
+- name: Install Proxmox-VE
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply install_proxmox
+  ignore_errors: True
+
+- name: REBOOT SERVER
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" system.reboot
+
+- name: Wait 300 seconds for the rebooted server to come back online -- port 22 open 
+  wait_for:
+    port: 22
+    host: "10.55.0.21"
+    #host: "{{ hostvars['p20'].ip }}"
+    delay: 5
+    timeout: 400
+    msg: waited for ssh port  
+  ignore_errors: True
+# call handler to reboot server (handler is called "restart servers")
+#- name: Reboot Server
+#  command: /bin/true
+#  notify: "restart servers"
+#  ignore_errors: True
+
+- name: Kernel Modules
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply kernel_modules
+  ignore_errors: True
+  tags: kmods
+  retries: 5
+  delay: 5
+  register: result
+  until: result.rc == 0
+
+- name: Disk Partitioning
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply storage_disk_partitioning_zpool
+
+- name: LXD Install via Snap
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply lxd_snap
+  ignore_errors: True
+
+- name: LXD Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply lxd_configuration
+  ignore_errors: True
+
+- name: UFW Firewall Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply ufw
+  ignore_errors: True
+
+- name: Wait 15 seconds for -- port 22 open after ufw
+  wait_for:
+    port: 22
+    host: "10.55.0.21"
+    #host: "{{ hostvars['p21'].ip }}"
+    delay: 10
+    timeout: 15
+    msg: waited for ssh port  
+  ignore_errors: True
+
+- name: Check for Minion to be active
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" test.ping
+  register: ping_result
+  retries: 30
+  delay: 5
+  # check for the salt test.ping stdoutput to have a result of True before continuing
+  until: '"True" in ping_result.stdout'
+
+- name: Backblaze S3FS Storage setup for Backups
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply backblaze_s3fs
+  ignore_errors: True
+
+
+- name: Setup Networking /etc/network/interfaces
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply networking_file
+  ignore_errors: True
+
+- name: Sysctl Flags
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply set_sysctl_conf
+  ignore_errors: True
+
+- name: Dist upgrade
+  apt:
+    upgrade: dist
+    dpkg_options: 'force-confold,force-confdef'
+  tags: dist-upgrade
+
+# Install Latest FRR
+- name: Free Range Routing Installation
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply frr_install
+  ignore_errors: True
+
+- name: Free Range Routing Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply frr_configuration
+  ignore_errors: True
+  notify: "restart frr p21"
+  tags: configure-frr
+  
+- name: Setup Users and Public Keys
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply users
+  ignore_errors: True
+
+- name: Setup Users in Visudo (Sudoers)
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply users_visudo
+  ignore_errors: True
+
+- name: Setup Users in PVE
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply users_pve
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply storage_gluster
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage Client and FSTAB
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply storage_gluster_client
+  ignore_errors: True
+
+
+- name: Setup Samba Shares
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply storage_samba_shares
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply storage_gluster
+  ignore_errors: True
+
+- name: Setup GlusterFS Storage Client and FSTAB
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply storage_gluster_client
+  ignore_errors: True
+
+# cross call task from another role
+# only run on NON master
+#- name: Proxmox Cluster Join (NON-MASTER only)
+#  include_role:
+#    name: proxmox_join_cluster
+#    tasks_from: join_cluster
+#  ignore_errors: True
+#  #when: node_type == "slave"
+#  tags: 
+#    - join-cluster
+
+- name: Setup LizardFS Storage
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply states.lizardfs.lizardfs_server
+  ignore_errors: True
+  tags: lizardfs
+
+- name: Setup LizardFS Client
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply states.lizardfs.lizardfs_client
+  ignore_errors: True
+  tags: lizardfs
+# last prox storage
+- name: Proxmox Storage Configuration File
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply proxmox_storage_config
+  ignore_errors: True
+
+# post task dist-upgrade to install FRR correct version
+
+- name: Dist upgrade
+  apt:
+    upgrade: dist
+    update_cache: yes
+    dpkg_options: 'force-confold,force-confdef'
+
+# working salt dist-upgrade
+- name: Dist upgrade to get latest FRR to be compatible with config
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply dist_upgrade_non_interactive
+  ignore_errors: True
+
+- name: Free Range Routing Configuration
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply frr_configuration
+  ignore_errors: True
+  notify: "restart frr p21"
+  tags: configure-frr
+
+- name: Free Range Routing Manual restart
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" cmd.run "systemctl restart frr"
+  ignore_errors: True

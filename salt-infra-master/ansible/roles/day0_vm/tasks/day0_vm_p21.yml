@@ -1,0 +1,19 @@
+---
+
+- name: get p20
+  set_fact: 
+    p20: "{{ hostvars[inventory_hostname].groups.hetzner[0] }}"
+
+- name: get p21
+  set_fact: 
+    p21: "{{ hostvars[inventory_hostname].groups.hetzner[1] }}"
+
+- name: proxmox cloud config snippets
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply proxmox_cloudconfig_snippets
+  ignore_errors: True
+
+- name: Create Ubuntu 20.04 Template
+  ansible.builtin.shell:
+    cmd: salt "{{ p21 }}" state.apply proxmox_create_vm_template_20_04
+  ignore_errors: True

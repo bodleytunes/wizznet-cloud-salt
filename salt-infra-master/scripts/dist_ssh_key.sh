@@ -1,0 +1,1 @@
+sshpass -p '{{ password }}' ssh-copy-id -o StrictHostKeyChecking=no root@{{ hostname }}

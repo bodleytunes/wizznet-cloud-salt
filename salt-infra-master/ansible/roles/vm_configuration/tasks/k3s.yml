@@ -1,0 +1,25 @@
+
+- name: Setup K3S 
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply states.k3s.k3s_full_stage1
+  ignore_errors: True
+  tags:
+    - k3s
+    - never
+
+
+- name: Setup Rancher and MetalLB
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply states.k3s.k3s_stage2
+  ignore_errors: True
+  tags:
+    - rancher
+    - never
+  
+- name: Setup Scheduler Descheduler
+  ansible.builtin.shell:
+    cmd: salt "{{ current_host }}" state.apply states.k3s.scheduler_descheduler
+  ignore_errors: True
+  tags:
+    - scheduler_descheduler
+    - never
