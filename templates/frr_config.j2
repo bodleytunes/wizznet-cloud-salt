@@ -5,7 +5,7 @@
 {%- set zt_peers = salt['pillar.get'](opts.id+':frr:zt:peers'), [] %}
 
 {#
-# some funky shite to get the zt interface into a variable - needs sorting/tidying
+# some funky stuff to get the zt interface into a variable - needs sorting/tidying
 {% set zt_interface_cmd_return_value = salt['cmd.shell']('$(ip -br a | awk "{print $1}" | grep zt)') %}
 {% set zt_interface = zt_interface_cmd_return_value.split(' ') %}
 {% set zt_interface_result1 = zt_interface[2] %}

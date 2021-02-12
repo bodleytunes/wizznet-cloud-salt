@@ -1,6 +1,7 @@
 {% set hostvars = salt['pillar.get'](opts.id) %}
 {% set interface_networks = salt['pillar.get'](opts.id+':interface_networks', []) %}
 
+{#
 {% for net in interface_networks %}
 {% if "lxdbr" in net.name %}
 {{ net.name }}:
@@ -12,6 +13,8 @@
     - timeout: 300
 {% endif %}
 {% endfor %}
+
+#}
 
 lxd_create_dummy_bridge:
   cmd.run:

@@ -1,16 +1,12 @@
 import json
 import requests
 from requests import NullHandler
+from pathlib import Path
 
 
 def get_node_id(token):
 
-    # headers = {'Content-Type': 'application/json',
-    #           'Authorization': 'Bearer ' + str(token) }
-
     headers = {"X-ZT1-Auth": str(token)}
-
-    # curl -H 'X-ZT1-Auth: ga__________lfw' http://localhost:9993/status
 
     if token is not None:
         response = requests.get("http://localhost:9993/status", headers=headers)
@@ -19,15 +15,8 @@ def get_node_id(token):
     return {}
 
 
-from pathlib import Path
-
-
 def set_authorize_node(token, zt_network_id, zt_node_id, authorize=True):
 
-    # headers = {'Content-Type': 'application/json',
-    #           'Authorization': 'Bearer ' + str(token) }
-
-    # headers = {"X-ZT1-Auth": str(token)}
     bearer = f"bearer {token}"
     headers = {"Content-Type": "application/json", "Authorization": bearer}
     url = f"https://my.zerotier.com/api/network/{zt_network_id}/member/{zt_node_id}"
@@ -38,7 +27,7 @@ def set_authorize_node(token, zt_network_id, zt_node_id, authorize=True):
     # curl -v -X POST https://my.zerotier.com/api/network/1_____d/member/64b124492d --header "Content-Type: application/json" --header "Authorization: bearer [secret-api-token-goes-here-fnowfjwnonf]" -d '{"config": {"authorized": true}}'
 
     if token or zt_network_id or zt_node_id is not None:
-        # have to use json.dumps to correctly serialize the json otherwise it complains of "unmarshalled"
+        # serialize the json
         response = requests.post(url, headers=headers, data=json.dumps(json_payload))
         data = response.json()
         return data
@@ -47,10 +36,6 @@ def set_authorize_node(token, zt_network_id, zt_node_id, authorize=True):
 
 def set_ip(token, zt_network_id, zt_node_id, ip_address):
 
-    # headers = {'Content-Type': 'application/json',
-    #           'Authorization': 'Bearer ' + str(token) }
-
-    # headers = {"X-ZT1-Auth": str(token)}
     bearer = f"bearer {token}"
     headers = {"Content-Type": "application/json", "Authorization": bearer}
     url = f"https://my.zerotier.com/api/network/{zt_network_id}/member/{zt_node_id}"
@@ -58,11 +43,7 @@ def set_ip(token, zt_network_id, zt_node_id, ip_address):
     # {% set script_final_line = "'{\"config\": {\"ipAssignments\": [\"" + hostvars.zt_ip +"\"]} }'" %}
     json_payload = {"config": {"ipAssignments": [str(ip_address)]}}
 
-    # full curl api example to central zerotier controller
-    # curl -v -X POST https://my.zerotier.com/api/network/______/member/64b124492d --header "Content-Type: application/json" --header "Authorization: bearer [secret-api-token-goes-here-fnowfjwnonf]" -d '{"config": {"authorized": true}}'
-
     if token or zt_network_id or zt_node_id is not None:
-        # have to use json.dumps to correctly serialize the json otherwise it complains of "unmarshalled"
         response = requests.post(url, headers=headers, data=json.dumps(json_payload))
         data = response.json()
         return data
@@ -71,19 +52,11 @@ def set_ip(token, zt_network_id, zt_node_id, ip_address):
 
 def set_name(token, zt_network_id, zt_node_id, zt_name):
 
-    # headers = {'Content-Type': 'application/json',
-    #           'Authorization': 'Bearer ' + str(token) }
-
-    # headers = {"X-ZT1-Auth": str(token)}
     bearer = f"bearer {token}"
     headers = {"Content-Type": "application/json", "Authorization": bearer}
     url = f"https://my.zerotier.com/api/network/{zt_network_id}/member/{zt_node_id}"
 
-    # {% set script_final_line = "'{\"config\": {\"ipAssignments\": [\"" + hostvars.zt_ip +"\"]} }'" %}
     json_payload = {"name": zt_name}
-
-    # full curl api example to central zerotier controller
-    # curl -v -X POST https://my.zerotier.com/api/network/17_________/member/64b124492d --header "Content-Type: application/json" --header "Authorization: bearer [secret-api-token-goes-here-fnowfjwnonf]" -d '{"config": {"authorized": true}}'
 
     if token or zt_network_id or zt_node_id is not None:
         # have to use json.dumps to correctly serialize the json otherwise it complains of "unmarshalled"
@@ -95,19 +68,12 @@ def set_name(token, zt_network_id, zt_node_id, zt_name):
 
 def set_description(token, zt_network_id, zt_node_id, description):
 
-    # headers = {'Content-Type': 'application/json',
-    #           'Authorization': 'Bearer ' + str(token) }
-
-    # headers = {"X-ZT1-Auth": str(token)}
     bearer = f"bearer {token}"
     headers = {"Content-Type": "application/json", "Authorization": bearer}
     url = f"https://my.zerotier.com/api/network/{zt_network_id}/member/{zt_node_id}"
 
     # {% set script_final_line = "'{\"config\": {\"ipAssignments\": [\"" + hostvars.zt_ip +"\"]} }'" %}
     json_payload = {"description": description}
-
-    # full curl api example to central zerotier controller
-    # curl -v -X POST https://my.zerotier.com/api/network/17d_________/member/64b124492d --header "Content-Type: application/json" --header "Authorization: bearer [secret-api-token-goes-here-fnowfjwnonf]" -d '{"config": {"authorized": true}}'
 
     if token or zt_network_id or zt_node_id is not None:
         # have to use json.dumps to correctly serialize the json otherwise it complains of "unmarshalled"
@@ -134,20 +100,14 @@ def get_auth_token():
 
 def set_networks(token, zt_network_id, zt_node_id, networks, zt_subnet):
 
-    # headers = {'Content-Type': 'application/json',
-    #           'Authorization': 'Bearer ' + str(token) }
-
-    # headers = {"X-ZT1-Auth": str(token)}
     bearer = f"bearer {token}"
     headers = {"Content-Type": "application/json", "Authorization": bearer}
     url = f"https://my.zerotier.com/api/network/{zt_network_id}"
 
     # networks = [{"target": "10.21.0.0/16", "via": "10.55.0.21"}, {"target": "10.31.0.0/16", "via": "10.55.0.21"}]
-    # get the keyword args (In this case networks)
-    # networks = kwargs.get('networks')
 
     if token or zt_network_id or zt_node_id or networks is not None:
-        # have to use json.dumps to correctly serialize the json otherwise it complains of "unmarshalled"
+
         response_data = requests.get(url, headers=headers)
         response_dict = response_data.json()
         current_route_list = response_dict["config"]["routes"]
@@ -160,7 +120,7 @@ def set_networks(token, zt_network_id, zt_node_id, networks, zt_subnet):
                     current_route_list.append(net)
             # now updated route list should equal current_route_list
             updated_route_list = current_route_list
-            # zt_subnet - check its there if its not then append it to dict array.
+            # zt_subnet - check its there if its not then append it.
             if zt_subnet not in updated_route_list:
                 updated_route_list.append(zt_subnet)
 

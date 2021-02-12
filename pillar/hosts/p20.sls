@@ -66,11 +66,13 @@ p20:
       subnet: 10.20.10.0
       ip: 10.20.10.1
       mask: /24
+      mtu: 1350
       peer_group_name: rancher-kubernetes
     - name: lxdbr1
       subnet: 10.100.0.0
       ip: 10.100.0.1
       mask: /24
+      mtu: 1350
       peer_group_name: rancher-kubernetes
     - name: vmbr0
       subnet: 10.200.10.0

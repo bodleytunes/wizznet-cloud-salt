@@ -28,14 +28,25 @@ iface evpn{{ bridge.vxlan_id }} inet static
   mtu {{ bridge.mtu }}
   hwaddress ether {{ bridge.anycast_mac }}
 
-{% endif %}
-{% endfor %}
-{% endfor %}
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
 
-
-
-
-
+{# for vmbrX bridges #}
+{%- for items in bridge_interfaces -%}
+{%- for bridge in items -%}
+{# check for evpn in the name otherwise it will fail if it tries a non evpn type as key wont exist #}
+{%- if 'lxdbr' in bridge.name %}
+auto {{ bridge.name }}
+iface {{ bridge.name }} inet static
+          address {{bridge.ip}}{{bridge.mask}}
+          bridge-ports none
+          bridge-stp off
+          bridge-fd 0  
+          mtu {{ bridge.mtu }}
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
 {# for vxlan bridges #}
 {% for items in bridge_interfaces %}
 {% for bridge in items %}
@@ -50,9 +61,9 @@ iface vxlan{{ bridge.vxlan_id }}
   bridge-unicast-flood {{ bridge.bridge_unicast_flood }}
   bridge-multicast-flood {{ bridge.bridge_multicast_flood }}
 
-{% endif %}
-{% endfor %}
-{% endfor %}
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
 
 {# for vmbrX bridges #}
 {#}

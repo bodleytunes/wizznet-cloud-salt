@@ -186,13 +186,6 @@ def add_partition_scheme_hwraid_swap(
     return
 
 
-# def get_partitions(client, template_name="wiz-debian-10", partition_scheme="jons"):
-#    partitions = client.get(
-#        f"/me/installationTemplate/{template_name}/partitionScheme/{partition_scheme}/partition"
-#    )
-#    return partitions
-
-
 def get_disk_groups(client, service):
     disk_groups = client.get(f"/dedicated/server/{service}/specifications/hardware")
     return disk_groups
@@ -204,10 +197,6 @@ def get_install_status():
 
     client = get_client()
     server_inventory = get_server_inventory()
-    # server_inventory = [
-    #    {"p20": {"hostname": "blah-blah1"}},
-    #    {"p21": {"hostname": "blan-blah2"}},
-    # ]
 
     for item in server_inventory:
         service_name = item["hostname"]
