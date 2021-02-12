@@ -3,7 +3,7 @@ Jon's testbed (Work in progress) ovh cloud server deployment lab
 
 ## Jon's testbed ovh cloud server deployment lab
 
-### Example to deploy to two bare metal OVH via ansible from Day0
+### Example to deploy to two bare metal OVH servers via ansible and salt from Day0
 
 * Deploys servers from bare metal debian 10 buster
 * Install packages, proxmox etc
