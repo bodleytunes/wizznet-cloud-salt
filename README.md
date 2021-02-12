@@ -50,6 +50,9 @@ Using ansible instead of BASH script
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube2" --tags k3s;
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube1" --tags rancher;
  ```
+ 
+ #### To destroy vm's
+ `ansible-playbook -i inventory.ini day0_2_terraform.yml --tags terraform_destroy`
 
  ### Example to deploy directly via saltstack commands and omit ansible:
 
