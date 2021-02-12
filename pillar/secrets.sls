@@ -144,3 +144,18 @@ secrets:
     hbKMcHzJIc5ESH60b52e0pg9b1wr7mn5+jdJHIO/R6eDcw==
     =E/OF
     -----END PGP MESSAGE-----
+  zt_network: |
+    -----BEGIN PGP MESSAGE-----
+
+    hQGMAy0M/e1uX7LeAQwAmErgf9su2cB/xdpJPSBvHAKk3kqKBQ21/i81zhu1YS9v
+    E3kwFb2QYeOWrD9inw3L9DTcI9kRqGxhAEK/fk7sdXZ2zGt9AJPNW2YEyhyUC73w
+    BHK419mtwYXsVFRq2m6EojmTdEZ7PiHATL/zq9hVht+vBZuuf9TQZqNRFbmIWzPl
+    sMWVD/M6nf1xasSviff5Fr4BbKTOlNues/LMZsA7vsjh/G7Je3r4VRY8R9Lwnp0p
+    8uVUVF79gDhP1i30QPbU33mMP9jtJqF0iPsjlJEzMAPhFGCG3Gb5yybC08VsS3OS
+    tYVUvfaNoPwbxmRy2aajHSyu3Zc/89dRxvL9Kjw9qD0LC+pzhJWMID9cwNoU2inR
+    MTYCg14cAsk6Aa6P3/0QQKmzu34AmCe6YTj10pvQdnj3SA85oD6ESvs0XTBX2Z7V
+    F3p4GdQ9hzmCf2lq9LWSe5ebmV6c3iLpxM0WuBi1g55+LPTCdDtHR28t7NLU0zxy
+    hPvYkPlgq20SHXmdo8qj0ksB4UrMHjChCqRCKOg3alrPukCsvBT66n7ocOharQfu
+    44RirGMSgw2ppgJCBCitNWETTSem63ytt+m5a1taLRKvwcmVGtSJXFfNMNk=
+    =WqC8
+    -----END PGP MESSAGE-----

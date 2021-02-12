@@ -3,7 +3,6 @@ p20:
   router_id: 51.77.116.79
   public_ip: 51.77.116.79
   zt_ip: 10.55.0.20
-  zt_network: 17d709436c89081d
   wg_ip: 10.56.0.20
   nb_ip: 10.57.0.20
   bgp_as: 20

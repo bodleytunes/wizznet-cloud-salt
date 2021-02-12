@@ -3,7 +3,6 @@ lm2:
   router_id: 10.12.10.62
   public_ip: 10.12.10.62
   zt_ip: 10.55.0.122
-  zt_network: 17d709436c89081d
   wg_ip: 10.56.0.122
   nb_ip: 10.57.0.122
   bgp_as: 12

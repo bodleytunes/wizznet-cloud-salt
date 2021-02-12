@@ -1,4 +1,4 @@
-{%- set zt_network_id = salt['pillar.get']('group_vars:zt_network') -%}
+{%- set zt_network_id = salt['pillar.get']('secrets:zt_network') -%}
 
 include:
   - zerotier_one_install

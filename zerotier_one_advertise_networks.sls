@@ -14,7 +14,7 @@
 zt_module.set_networks:
   module.run:
     - token: {{ token }}
-    - zt_network_id: {{ salt['pillar.get']('group_vars:zt_network') }}
+    - zt_network_id: {{ salt['pillar.get']('secrets:zt_network') }}
     - zt_node_id: {{zerotier_status.address}}
     # send list / array of networks
     - networks: {{hostvars.zt.networks}}

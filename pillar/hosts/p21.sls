@@ -3,7 +3,6 @@ p21:
   router_id: 188.165.235.210
   public_ip: 188.165.235.210
   zt_ip: 10.55.0.21
-  zt_network: 17d709436c89081d
   wg_ip: 10.56.0.21
   nb_ip: 10.57.0.21
   bgp_as: 21
