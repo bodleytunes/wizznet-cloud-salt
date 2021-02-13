@@ -1,7 +1,7 @@
 {% set groupvars = salt['pillar.get']('group_vars')  %}
 
 # zt global network id
-{% set zt_network_id = secrets.zt_network %}
+{% set zt_network_id = salt['pillar.get']('secrets:zt_network') %}
 # zt api access token
 #! todo write exec module to get the remote controller token
 #TODO
