@@ -66,14 +66,14 @@ p21:
       mtu: 1350
     - lxdbr0:
       name: lxdbr0
-      subnet: 10.29.10.0
-      ip: 10.29.10.1
+      subnet: 10.21.10.0
+      ip: 10.21.10.1
       mask: /24
       mtu: 1350
     - lxdbr1:
       name: lxdbr1
-      subnet: 10.102.0.0
-      ip: 10.102.0.1
+      subnet: 10.101.0.0
+      ip: 10.101.0.1
       mask: /24
       mtu: 1350
     - vmbr0:

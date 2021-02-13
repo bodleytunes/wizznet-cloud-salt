@@ -1,20 +1,26 @@
 ## Jon's testbed ovh cloud server deployment lab
 
 ### Example to deploy to two bare metal OVH via ansible from Day0
+
 * Deploys servers from bare metal debian 10 buster
 * Install packages, proxmox etc
 * Setup Linux networking and bridges using ifupdown2
-* Setup overlay networking via Zerotier-One
-* Setup inter-host bridge evpn/vxlan overlay via FRR / Free range routing
+* Setup encrypted overlay networking via Zerotier-One
+* Custom python salt execution module to setup the zerotier Networking, add networks / routes etc
+* Setup inter-host bridge evpn/vxlan overlay via FRR / Free range routing (encapped through Zerotier-one)
 * Setup Proxmox cluster
 * Kernel Modules
-* Disk Partitioning and ZFS zpools and datasets
+* Disk Partitioning: ZFS zpools and datasets
 * LXD system container install via snap / configure lxc related bridges
-* UFW firewall and Nat rules
+* UFW firewall and NAT ingress rules#
+* Haproxy Load balancers with Anycast Loopbacks advertised into BGP
 * S3FS Backups to backblaze
-* GlusterFS shared storage for rancher/k3s
-* LizardFS shared storage for plex/media
+* GlusterFS shared storage for stateful apps/storage in rancher/k3s 
+* LizardFS shared storage for plex/media programs
 * Users, SSH Keys, login policy
+* Terraform and cloud init templates/images to deploy initial VM's in proxmox
+* Deploy K3s (lightweight kubernetes)
+* Install Rancher on K3s
 
 # Work in progress and very rough around the edges! :) 
 
