@@ -1,8 +1,3 @@
-del_repo_s3fs:
-  module.run:
-    - pkg.del_repo:
-      - repo: "deb https://enterprise.proxmox.com/debian/pve buster pve-enterprise"
-
 s3fs_install:
   pkg.installed:
     - pkgs:
