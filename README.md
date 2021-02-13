@@ -45,6 +45,8 @@ pytest -s -m ovh_install
  ansible-playbook -i inventory.ini day0_2_terraform.yml;
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube1" ;
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube2" ;
+ ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube1" --tags users_vm;
+ ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube2" --tags users_vm;
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube1" --tags networking;
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube2" --tags networking;
  ansible-playbook -i inventory.ini day0_3_vm_configuration.yml --extra-vars "current_host=kube1" --tags gluster_client;
