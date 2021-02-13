@@ -32,8 +32,11 @@ Using ansible instead of BASH script
 ### via Ansible -> calling Salt
 
 ```
- pytest -s -m ovh_install
- # ^ wait for install to finish (alteratively just use python command and run the server_install function directly)
+python3 _modules/ovh_module.py
+  or via pytest (WIP)
+pytest -s -m ovh_install
+ 
+ # ^ wait for install to finish, check in soyoustart GUI/control panel.
 
  ansible-playbook -i inventory.ini day0_0_deploy.yml --tags p20,p21;
  ansible-playbook -i inventory.ini proxmox_join_cluster.yml --tags join-cluster;
