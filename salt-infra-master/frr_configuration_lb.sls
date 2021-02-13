@@ -1,4 +1,4 @@
-install_ifupdown:
+install_frr_routing:
   pkg.installed:
     - pkgs:
       - frr
