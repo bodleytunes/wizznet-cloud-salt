@@ -71,14 +71,13 @@ salt-key -a p21 -y
 
 
 salt p21 state.apply initial_package_installs
-salt p21 state.apply initial_package_installs
 salt p21 state.apply install_proxmox
 salt p21 system.reboot
 
 echo "rebooting..."
 sleep 300
 
-# the rest (highstate)
+# synchronize custom execution modules to minions
 salt '*' saltutil.sync_modules
 
 salt p21 state.apply zerotier_one_stage1
