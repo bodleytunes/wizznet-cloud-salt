@@ -98,4 +98,4 @@ salt p21 state.apply frr_configuration test=false
 
 salt p21 state.apply users test=false
  ```
-[wizzcloud] [Jenkins].png
+https://github.com/bodleytunes/wizznet-cloud-deployment-lab/blob/main/%5Bwizzcloud%5D%20%5BJenkins%5D.png?raw=true
