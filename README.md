@@ -98,3 +98,4 @@ salt p21 state.apply frr_configuration test=false
 
 salt p21 state.apply users test=false
  ```
+[wizzcloud] [Jenkins].png
