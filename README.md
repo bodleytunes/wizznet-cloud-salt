@@ -1,8 +1,6 @@
 # wizznet-cloud-deployment-lab
 Jon's testbed (Work in progress) ovh cloud server deployment lab
 
-## Jon's testbed ovh cloud server deployment lab
-
 ### Example to deploy to two bare metal OVH servers via ansible and salt from Day0
 
 * Deploys servers from bare metal debian 10 buster (via OVH api)
@@ -73,14 +71,13 @@ salt-key -a p21 -y
 
 
 salt p21 state.apply initial_package_installs
-salt p21 state.apply initial_package_installs
 salt p21 state.apply install_proxmox
 salt p21 system.reboot
 
 echo "rebooting..."
 sleep 300
 
-# the rest (highstate)
+# synchronize custom execution modules to minions
 salt '*' saltutil.sync_modules
 
 salt p21 state.apply zerotier_one_stage1
