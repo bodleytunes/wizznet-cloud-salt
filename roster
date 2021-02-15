@@ -13,7 +13,7 @@ p21:
     tty: True
 
 lm2:
-    host: 10.12.10.62
+    host: 10.12.10.10
     user: jon
     priv: /root/.ssh/id_ed25519
     sudo: True

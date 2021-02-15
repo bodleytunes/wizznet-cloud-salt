@@ -17,10 +17,14 @@ zpool1:
         compression: lz4
         atime: on
         relatime: on
-    - layout:
+    - layout:    
+{% if opts.id != 'lm2' %} 
       - mirror:
         - {{ hostvars.zfs.disk1 }}
         - {{ hostvars.zfs.disk2 }}
+{% elif opts.id == 'lm2' %}
+      - {{ hostvars.zfs.disk1 }}
+{% endif %}
 {{ hostvars.zfs.dataset_lxd }}:
   zfs.filesystem_present:
     - create_parent: true

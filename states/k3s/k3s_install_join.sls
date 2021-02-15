@@ -17,6 +17,7 @@ k3s_join_embedded:
         K3S_TOKEN: {{ salt['pillar.get']('secrets:k3s_token') }}
         SERVER_IP: {{ salt['pillar.get'](opts.id+':k3s:peer') }}
         NODE_IP: {{ salt['pillar.get'](opts.id+':networking:0:ip') }}
+        K3S_VERSION: {{ salt['pillar.get']('k3s:k3s_version') }}
 
 
 #k3s_master:

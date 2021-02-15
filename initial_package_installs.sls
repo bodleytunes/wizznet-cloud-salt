@@ -40,6 +40,7 @@ big_list:
       - pkg-config
       - python-pip
       - openvswitch-switch
+      - byobu
 big_list_not_installed:
   pkg.purged:
     - pkgs:

@@ -1,14 +1,9 @@
 ---
-#- debug:
-#    var:
-#      "{{ hostvars[inventory_hostname].groups.hetzner[1] }}"
 
-
-- name: get lm2
+- name: lm2 fact
   set_fact: 
-    lm2: "{{ hostvars[inventory_hostname].groups.hetzner[0] }}"
+    lm2: "lm2"
   tags: always
-
 
 - name: get all hetzner hosts
   set_fact: 
@@ -23,7 +18,15 @@
     cmd: salt-ssh -i "{{ lm2 }}" state.apply all_hosts_file
   ignore_errors: True
 
+- name: Install ifupdown2
+  ansible.builtin.shell:
+    cmd: salt-ssh -i "{{ lm2 }}" state.apply ifupdown2
+  async: 80
+  poll: 5
+  ignore_errors: True
 
+
+#    
 #- name: Install ifupdown2
 #  apt:
 #    name: ifupdown2
@@ -33,25 +36,36 @@
 #    - never
 #  become: yes
 #  delegate_to: "{{ lm2 }}"
+#  #with_items: 
+  #  - "{{ groups['hetzner'] }}"
+  #when: item == 'lm2'
+  #register: delegated_node
 
-
-
-- name: Install ifupdown2
+- name: Check for Minion exists
   ansible.builtin.shell:
-    cmd: salt-ssh -i "{{ lm2 }}" state.apply ifupdown2
-
+    cmd: salt "{{ lm2 }}" test.ping
+  register: ping_result
+  retries: 5
+  delay: 2
+  # check for the salt test.ping stdoutput to have a result of True before continuing
+  until: '"True" in ping_result.stdout'
+  ignore_errors: true
+  
 
 - name: Delete Salt-key
   ansible.builtin.shell:
     cmd: salt-key -d "{{ lm2 }}" -y
+  when: '"No minions matched the target" in ping_result.stdout' 
 
 - name: Install salt minion
   ansible.builtin.shell:
     cmd: salt-ssh -i "{{ lm2 }}" state.apply minion_control
+  when: '"No minions matched the target" in ping_result.stdout'
 
 - name: Accept new Salt-key
   ansible.builtin.shell:
     cmd: salt-key -a "{{ lm2 }}" -y
+  when: '"No minions matched the target" in ping_result.stdout'
 
 - name: Check for Minion to be active
   ansible.builtin.shell:
@@ -61,6 +75,7 @@
   delay: 4
   # check for the salt test.ping stdoutput to have a result of True before continuing
   until: '"True" in ping_result.stdout'
+  when: '"No minions matched the target" in ping_result.stdout'
 
   
 
@@ -73,7 +88,7 @@
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply networking_file
   ignore_errors: True
-
+  
 - name: Install All Initial pre-requisite Packages using APT
   ansible.builtin.shell:
     cmd: salt-ssh -i "{{ lm2 }}" state.apply initial_package_installs
@@ -85,12 +100,10 @@
 - name: Zerotier-one Networking - Stage1 - install Zerotier
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply zerotier_one_stage1
-  ignore_errors: True
 
 - name: Zerotier-one Networking - Stage2 - Join Network, Authorize, Advertise Networks
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply zerotier_one_stage2
-  ignore_errors: True
 
 - name: Install Proxmox-VE
   ansible.builtin.shell:
@@ -100,15 +113,17 @@
 - name: REBOOT SERVER
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" system.reboot
+  ignore_errors: true
+
+
 
 - name: Wait 300 seconds for the rebooted server to come back online -- port 22 open 
   wait_for:
     port: 22
-    host: "10.55.0.122"
-    #host: "ns31050143.ip-51-77-116.eu"
-    host: "{{ hostvars['lm2'].ip }}"
-    delay: 10
-    timeout: 800
+    host: "10.12.10.10"
+    #host: "{{ hostvars['p20'].ip }}"
+    delay: 5
+    timeout: 400
     msg: waited for ssh port  
   ignore_errors: True
 # call handler to reboot server (handler is called "restart servers")
@@ -116,8 +131,6 @@
 #  command: /bin/true
 #  notify: "restart servers"
 #  ignore_errors: True
-
-## need to make sure this runs as there is a delay so wait for good return code
 
 - name: Kernel Modules
   ansible.builtin.shell:
@@ -136,6 +149,7 @@
 - name: LXD Install via Snap
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply lxd_snap
+  ignore_errors: True
 
 - name: LXD Configuration
   ansible.builtin.shell:
@@ -150,13 +164,21 @@
 - name: Wait 15 seconds for -- port 22 open after ufw
   wait_for:
     port: 22
-    #host: "10.55.0.122"
-    host: "{{ hostvars['lm2'].ip }}"
+    host: "10.55.0.21"
+    #host: "{{ hostvars['lm2'].ip }}"
     delay: 10
     timeout: 15
     msg: waited for ssh port  
   ignore_errors: True
 
+- name: Check for Minion to be active
+  ansible.builtin.shell:
+    cmd: salt "{{ lm2 }}" test.ping
+  register: ping_result
+  retries: 30
+  delay: 5
+  # check for the salt test.ping stdoutput to have a result of True before continuing
+  until: '"True" in ping_result.stdout'
 
 - name: Backblaze S3FS Storage setup for Backups
   ansible.builtin.shell:
@@ -174,22 +196,24 @@
     cmd: salt "{{ lm2 }}" state.apply set_sysctl_conf
   ignore_errors: True
 
-## UDPATE TO LATEST 7.4 FRR OR CONFIG IS NOT ACCEPTED
-
 - name: Dist upgrade
   apt:
     upgrade: dist
     dpkg_options: 'force-confold,force-confdef'
   tags: dist-upgrade
 
-# configure then restart the service via handler
+# Install Latest FRR
+- name: Free Range Routing Installation
+  ansible.builtin.shell:
+    cmd: salt "{{ lm2 }}" state.apply frr_install
+  ignore_errors: True
+
 - name: Free Range Routing Configuration
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply frr_configuration
   ignore_errors: True
-  notify: "restart frr"
-  tags: "configure-frr"
-  
+  notify: "restart frr lm2"
+  tags: configure-frr
   
 - name: Setup Users and Public Keys
   ansible.builtin.shell:
@@ -211,7 +235,7 @@
     cmd: salt "{{ lm2 }}" state.apply storage_gluster
   ignore_errors: True
 
-- name: Setup GlusterFS Storage Gluster Client and Fstab Mount for GV1
+- name: Setup GlusterFS Storage Client and FSTAB
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply storage_gluster_client
   ignore_errors: True
@@ -222,53 +246,43 @@
     cmd: salt "{{ lm2 }}" state.apply storage_samba_shares
   ignore_errors: True
 
-### on lm2 master only
-
-- name: Proxmox Cluster Pre-requisites (Master only)
-  ansible.builtin.shell:
-    cmd: salt "{{ lm2 }}" state.apply proxmox_cluster_pre_req
-  ignore_errors: True
-
-- name: Proxmox Cluster Create (Master only)
-  ansible.builtin.shell:
-    cmd: salt "{{ lm2 }}" state.apply proxmox_cluster_create
-  ignore_errors: True
-
 - name: Setup GlusterFS Storage
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply storage_gluster
   ignore_errors: True
-  tags:
-    - glusterfs-storage
-    - glusterfs
 
-- name: Setup GlusterFS Storage Gluster Client and Fstab Mount for GV1
+- name: Setup GlusterFS Storage Client and FSTAB
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply storage_gluster_client
   ignore_errors: True
-  tags:
-    - glusterfs-client
-    - glusterfs
 
+# cross call task from another role
+# only run on NON master
+#- name: Proxmox Cluster Join (NON-MASTER only)
+#  include_role:
+#    name: proxmox_join_cluster
+#    tasks_from: join_cluster
+#  ignore_errors: True
+#  #when: node_type == "slave"
+#  tags: 
+#    - join-cluster
 
 - name: Setup LizardFS Storage
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply states.lizardfs.lizardfs_server
   ignore_errors: True
+  tags: lizardfs
 
 - name: Setup LizardFS Client
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply states.lizardfs.lizardfs_client
   ignore_errors: True
-
-
-# last storage prox
+  tags: lizardfs
+# last prox storage
 - name: Proxmox Storage Configuration File
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply proxmox_storage_config
   ignore_errors: True
-  
-
 
 # post task dist-upgrade to install FRR correct version
 
@@ -288,7 +302,7 @@
   ansible.builtin.shell:
     cmd: salt "{{ lm2 }}" state.apply frr_configuration
   ignore_errors: True
-  notify: "restart frr"
+  notify: "restart frr lm2"
   tags: configure-frr
 
 - name: Free Range Routing Manual restart

@@ -24,7 +24,7 @@ p21:
     - 10.12.10.1: mikrotik-lisk
     - 10.12.10.3: mikrotik-lisk-cap-ac
   interface_names:
-    upstream: vmbr0
+    upstream: eno1
     upstream_physical: eno1 
     lxd0: lxdbr0
     lxd1: lxdbr1

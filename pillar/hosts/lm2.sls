@@ -1,7 +1,7 @@
 lm2:
   hostname: lm2
-  router_id: 10.12.10.62
-  public_ip: 10.12.10.62
+  router_id: 10.12.10.10
+  public_ip: 10.12.10.10
   zt_ip: 10.55.0.122
   wg_ip: 10.56.0.122
   nb_ip: 10.57.0.122
@@ -9,7 +9,7 @@ lm2:
   vxlan_bridge_mtu: 1350
   networking:
     - name: eno1
-      ip: 10.12.10.62
+      ip: 10.12.10.10
       mask: 255.255.255.0
       gw_dev: True
       gw: 10.12.10.1
@@ -23,7 +23,7 @@ lm2:
     - p75
     - p10 
   hosts_entries:
-    - 10.12.10.62: lm2
+    - 10.12.10.10: lm2
     - 10.55.0.20: p20
     - 10.55.0.21: p21 
     - 10.55.0.43: p43 
@@ -33,7 +33,7 @@ lm2:
     - 10.12.10.1: mikrotik-lisk
     - 10.12.10.3: mikrotik-lisk-cap-ac
   interface_names:
-    upstream: vmbr0
+    upstream: eno1
     upstream_physical: eno1
     lxd0: lxdbr0
     lxd1: lxdbr1
@@ -72,13 +72,13 @@ lm2:
       bridge_unicast_flood: 'off'
       mtu: 1350
     - name: lxdbr0
-      subnet: 10.20.10.0
-      ip: 10.20.10.1
+      subnet: 10.12.12.0
+      ip: 10.12.12.1
       mask: /24
       peer_group_name: rancher-kubernetes
     - name: lxdbr1
-      subnet: 10.100.0.0
-      ip: 10.100.0.1
+      subnet: 10.112.0.0
+      ip: 10.112.0.1
       mask: /24
       peer_group_name: rancher-kubernetes
     - name: vmbr0
@@ -121,7 +121,7 @@ lm2:
     client_token: 'abcxyz'    
   zfs:
     name: zpool1
-    disk1: /dev/sda3
+    disk1: /dev/sdb
     disk2: Null
     dataset_lxd: zpool1/lxd 
     dataset_proxmox: zpool1/proxmox_vm
@@ -132,11 +132,13 @@ lm2:
     name: btrfs0
     disk1: Null
   k3s:
-    k3s_advertise_ip: 10.12.10.62
+    k3s_advertise_ip: 10.12.10.10
     k3s_server_ip: null
     k3s_database_server_ip: 10.55.0.43
   zt:
     networks:
       - target: '10.122.0.0/16'
+        via: '10.55.0.122'
+      - target: '10.12.12.0/24'
         via: '10.55.0.122'
 

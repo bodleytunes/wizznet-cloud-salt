@@ -16,6 +16,7 @@ k3s_master_embedded:
     - context:
         K3S_TOKEN: {{ salt['pillar.get']('secrets:k3s_token') }}
         NODE_IP: {{ salt['pillar.get'](opts.id+':networking:0:ip') }}
+        K3S_VERSION: {{ salt['pillar.get']('k3s:k3s_version') }}
 
 
 #k3s_master:

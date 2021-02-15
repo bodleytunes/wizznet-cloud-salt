@@ -6,14 +6,16 @@
 auto lo
 iface lo inet loopback
 
-iface {{ hostvars.interface_names.upstream_physical }} inet manual
+auto {{ hostvars.interface_names.upstream_physical }}
+iface {{ hostvars.interface_names.upstream_physical }} inet dhcp
 
+{#
 auto {{ hostvars.interface_names.upstream }}
 iface {{ hostvars.interface_names.upstream }} inet dhcp
   bridge-ports {{ hostvars.interface_names.upstream_physical }}
   bridge-stp off
   bridge-fd 0
-
+#}
 
 {# for evpn bridges #}
 {% for items in bridge_interfaces %}

@@ -29,3 +29,10 @@
     cmd: ansible "{{ p21 }}" -u jon --become  -m ansible.builtin.service -a "name=frr state=restarted"
   ignore_errors: True
   listen: "restart frr p21"
+
+
+- name: Restart FRR Service
+  ansible.builtin.shell:
+    cmd: ansible "{{ lm2 }}" -u jon --become  -m ansible.builtin.service -a "name=frr state=restarted"
+  ignore_errors: True
+  listen: "restart frr lm2"

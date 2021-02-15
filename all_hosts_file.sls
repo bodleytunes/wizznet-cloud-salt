@@ -27,10 +27,18 @@ lm1:
     - ip: 10.12.10.7
 salt:
   host.present:
+{% if opts.id == 'lm2' %}
+    - ip: 10.12.7.149
+{% else %}
     - ip: 86.29.22.70
+{% endif %}
 salt.wizznet.co.uk:
   host.present:
+{% if opts.id == 'lm2' %}
+    - ip: 10.12.7.149
+{% else %}
     - ip: 86.29.22.70
+{% endif %}
 127.0.1.1:
   host.only:
     - hostnames: []

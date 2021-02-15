@@ -6,3 +6,6 @@ hetzner_vars:
     - name: p21
       ip: 10.55.0.21
       node_type: slave
+    - name: lm2
+      ip: 10.55.0.122
+      node_type: slave
