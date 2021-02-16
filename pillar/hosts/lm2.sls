@@ -76,15 +76,18 @@ lm2:
       ip: 10.12.12.1
       mask: /24
       peer_group_name: rancher-kubernetes
+      mtu: 1350
     - name: lxdbr1
       subnet: 10.112.0.0
       ip: 10.112.0.1
       mask: /24
       peer_group_name: rancher-kubernetes
+      mtu: 1350
     - name: vmbr0
       subnet: 10.200.10.0
       ip: 10.200.1.1
       mask: /24
+      mtu: 1350
   frr:
     enable_bgp: 'yes'
     enable_ospf: 'yes'
@@ -94,8 +97,10 @@ lm2:
       peers:
         - name: p21
           ip: 10.55.0.21
+          bgp_peer_as: 21
         - name: p20
           ip: 10.55.0.20
+          bgp_peer_as: 20
     zt:
       peers:
         - name: lisk

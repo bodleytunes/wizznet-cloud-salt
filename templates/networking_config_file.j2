@@ -6,9 +6,16 @@
 auto lo
 iface lo inet loopback
 
+{% if opts.id == 'lm2' %}
+auto {{ hostvars.interface_names.upstream_physical }}
+iface {{ hostvars.interface_names.upstream_physical }} inet static
+  address {{ hostvars.public_ip }}
+  netmask 255.255.255.0
+  dns-nameservers 1.1.1.1,9.9.9.9,8.8.4.4
+{% else %}
 auto {{ hostvars.interface_names.upstream_physical }}
 iface {{ hostvars.interface_names.upstream_physical }} inet dhcp
-
+{% endif %}
 {#
 auto {{ hostvars.interface_names.upstream }}
 iface {{ hostvars.interface_names.upstream }} inet dhcp

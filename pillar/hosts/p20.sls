@@ -86,6 +86,10 @@ p20:
       peers:
         - name: p21
           ip: 10.55.0.21
+          bgp_peer_as: 21
+        - name: lm2
+          ip: 10.12.10.10
+          bgp_peer_as: 12
     zt:
       peers:
         - name: lisk
