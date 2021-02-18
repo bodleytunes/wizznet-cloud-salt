@@ -2,6 +2,7 @@ import json
 import requests
 from requests import NullHandler
 from pathlib import Path
+import pytest
 
 
 def get_node_id(token):
@@ -15,7 +16,52 @@ def get_node_id(token):
     return {}
 
 
+@pytest.fixture
+def token():
+    return "V___Wp"
+
+
+@pytest.fixture
+def zt_network_id():
+    return "1__81d"
+
+
+@pytest.mark.zt_check_exists
+def check_exists(token: str, zt_network_id: str):
+
+    bearer = f"bearer {token}"
+    headers = {"Content-Type": "application/json", "Authorization": bearer}
+    url = f"https://my.zerotier.com/api/network/{zt_network_id}/member"
+
+    # json_payload = {"config": {"authorized": authorize}}
+
+    # full curl api example to central zerotier controller
+    # curl -v -X POST https://my.zerotier.com/api/network/1_____d/member/64b124492d --header "Content-Type: application/json" --header "Authorization: bearer [secret-api-token-goes-here-fnowfjwnonf]" -d '{"config": {"authorized": true}}'
+
+    if token or zt_network_id is not None:
+
+        response_data = requests.get(url, headers=headers)
+        # deserialize
+        response_dict = response_data.json()
+
+        if len(response_dict) > 0:
+            for r in response_dict:
+                new_url = ""
+                match_nodes = ["p20", "p21"]
+                for node in match_nodes:
+                    if node in (r["description"] or r["name"]):
+                        # delete entry
+                        # curl -v -X DELETE -H 'X-ZT1-Auth: 62___5264a' http://localhost:9993/controller/network/2d___9ee/member/0123456789
+                        new_url = url + "/" + r["nodeId"]
+                        response = requests.delete(new_url, headers=headers)
+
+    return
+
+
 def set_authorize_node(token, zt_network_id, zt_node_id, authorize=True):
+
+    # first delete any existing
+    check_exists(token, zt_network_id)
 
     bearer = f"bearer {token}"
     headers = {"Content-Type": "application/json", "Authorization": bearer}
@@ -137,3 +183,6 @@ def set_networks(token, zt_network_id, zt_node_id, networks, zt_subnet):
         data = response_update.json()
         return data
     return {}
+
+
+check_exists(token="V_Wp", zt_network_id="1_1d")
