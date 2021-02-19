@@ -22,7 +22,7 @@
 * Deploy K3s (lightweight kubernetes)
 * Install Rancher on K3s
 
-# Work in progress and very rough around the edges! :) 
+# Work in progress ! :) 
 
 #### Day 0 examples:
 Using ansible instead of BASH script
