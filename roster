@@ -25,3 +25,38 @@ salt-client:
     priv: /root/.ssh/id_ed25519
     sudo: True
     tty: True
+
+kube1:
+    host: 10.100.0.100
+    user: jon
+    priv: /root/.ssh/id_troon
+    sudo: True
+    tty: True
+
+kube2:
+    host: 10.101.0.100
+    user: jon
+    priv: /root/.ssh/id_troon
+    sudo: True
+    tty: True
+
+lb1:
+    host: 10.100.0.253
+    user: jon
+    priv: /root/.ssh/id_troon
+    sudo: True
+    tty: True
+
+lb2:
+    host: 10.101.0.254
+    user: jon
+    priv: /root/.ssh/id_troon
+    sudo: True
+    tty: True
+
+plex:
+    host: 10.0.0.10
+    user: jon
+    priv: /root/.ssh/id_troon
+    sudo: True
+    tty: True
